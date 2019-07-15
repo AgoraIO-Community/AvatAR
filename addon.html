@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>TARDIS - Add-on | AGORA Challenge</title>
+  <!-- Compiled and minified CSS -->
+  <script src="https://unpkg.com/ml5@0.3.1/dist/ml5.min.js" type="text/javascript"></script>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+          
+<!-- <link rel="stylesheet" href="vendor/bootstrap.min.css"> -->
+<script src="AgoraRTCSDK-2.6.1.js"></script>
+<script src="vendor/jquery.js"></script>
+<script src="js/faker.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="red darken-4">
+        <div class="nav-wrapper">
+          <a href="#" class="brand-logo center">&nbsp; &nbsp;   <i class="material-icons">accessibility_new</i>&nbsp; TARDIS | Agora.io Challenge</a>
+          <ul id="nav-mobile" class="right hide-on-med-and-down">
+            <li><a href="https://www.hackathon.io/123843">Contact Us</a></li>
+            <li><a href="https://www.hackathon.io/123843">&nbsp;</a></li>
+          </ul>
+        </div>
+      </nav>
+            
+<!-- <div id="div_device"> -->
+ 
+
+<!-- </div> -->
+
+<div id="div_join" ><!---class="panel panel-default"-->
+<!-- <div class="panel-body"> -->
+<!-- App ID: <input id="appId" type="text" value="" size="36"></input> -->
+<!-- Channel: <input id="channel" type="text" value="test" size="4"></input> -->
+ <input id="video" type="checkbox" checked></input>
+
+
+<!-- <button id="leave" class="btn btn-primary btn-large blue darken-3" onclick="leave()">Leave</button> -->
+
+
+</div>
+<div class="card">
+<div class="row center">
+    <div class="col s3 m3 l3"><p><div class="select">
+        <label for="audioSource">Audio Source: </label><select  class="browser-default col s12" id="audioSource"></select>
+        </div>
+        </p></div>
+        <div class="col s6 m6 l6"><p><button id="join" class="btn btn-primary btn-medium green darken-1" onclick="join()">Join<i class="material-icons left">call</i></button>&nbsp;<button id="publish" class="btn btn-primary btn-medium blue darken-3" onclick="publish()">Publish<i class="material-icons left">camera_alt</i></button>&nbsp;<button id="unpublish" class="btn btn-primary btn-medium deep-orange darken-4" onclick="unpublish()">Unpublish<i class="material-icons left">videocam_off</i></button></p></div>
+    <div class="col s3 m3 l3"><p><div class="select">
+        <label for="videoSource">Video Source: </label><select  class="browser-default col s12" id="videoSource"></select>
+        </div></p></div>
+  </div>
+</div>
+<!-- </div> -->
+
+    <!--style>
+    .video__box{width:910px; margin:0 auto; overflow:hidden;}
+    .video__main{ width:810px; height:607px;float:left }
+    .video__list{ width:200px; height:607px; float:left;}
+    .video__item{ width:200px; height:174px; hei background:url(/img/icon_live.png) center center no-repeat; }
+    </style>
+    <div class="video__main">
+    </div>
+    <div class="video__list">
+        <div class="video__item"></div>
+        <div id="video" class="video__item">
+            <div id="agora_local"></div>
+        </div>
+    </div-->
+ 
+    <canvas id="canvas" width="500" height="500">
+    </canvas>
+  
+    
+      <canvas id="canvas2" width="500" height="500">
+
+      </canvas>
+   
+
+    <br>
+    <br>
+    <hr>
+<div id="video" style="margin:0 auto;">
+    <div id="agora_local" style="float:right;width:100px;height:100px;display:inline-block;"></div>
+</div>
+
+<script language="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('select');
+    var instances = M.FormSelect.init(elems, options);
+  });
+
+  // Or with jQuery
+
+  $(document).ready(function(){
+    $('select').formSelect();
+  });
+        
+var uid_1 = faker.hacker.adjective();
+var uid_2 = faker.name.firstName();
+uid = uid_1 + "-" + uid_2;
+token=""
+app_id="88b765a2930f40cf8d0a5790701f043b";
+if(!AgoraRTC.checkSystemRequirements()) {
+  alert("Your browser does not support WebRTC!");
+}
+
+/* select Log type */
+ AgoraRTC.Logger.setLogLevel(AgoraRTC.Logger.NONE);
+// AgoraRTC.Logger.setLogLevel(AgoraRTC.Logger.ERROR);
+// AgoraRTC.Logger.setLogLevel(AgoraRTC.Logger.WARNING);
+// AgoraRTC.Logger.setLogLevel(AgoraRTC.Logger.INFO);  
+// AgoraRTC.Logger.setLogLevel(AgoraRTC.Logger.DEBUG);
+
+/* simulated data to proof setLogLevel() */
+AgoraRTC.Logger.error('this is error');
+AgoraRTC.Logger.warning('this is warning');
+AgoraRTC.Logger.info('this is info');
+AgoraRTC.Logger.debug('this is debug');
+
+var client, localStream, camera, microphone;
+
+var audioSelect = document.querySelector('select#audioSource');
+var videoSelect = document.querySelector('select#videoSource');
+
+function join() {
+  document.getElementById("join").disabled = true;
+  // document.getElementById("video").disabled = true;
+  var channel_key = null;
+
+  console.log("Init AgoraRTC client with App ID: " + app_id);
+  client = AgoraRTC.createClient({mode: 'live'});
+  client.init(app_id, function () {
+    console.log("AgoraRTC client initialized");
+    $.get(
+      "https://tardis-demo.herokuapp.com/access_token?channel=test&uid="+uid,
+      function(data) {
+        token = data.token;
+        console.log("Data Loaded: " + token);
+        client.join(token, "test", uid, function(uid) {
+      console.log("User " + uid + " join channel successfully");
+
+      if (document.getElementById("video").checked) {
+        camera = videoSource.value;
+        microphone = audioSource.value;
+        localStream = AgoraRTC.createStream({streamID: uid, audio: false, cameraId: camera, microphoneId: microphone, video: document.getElementById("video").checked, screen: false});
+        //localStream = AgoraRTC.createStream({streamID: uid, audio: false, cameraId: camera, microphoneId: microphone, video: false, screen: true, extensionId: 'minllpmhdgpndnkomcoccfekfegnlikg'});
+        if (document.getElementById("video").checked) {
+          localStream.setVideoProfile('360p_3');
+
+        }
+
+        // The user has granted access to the camera and mic.
+        localStream.on("accessAllowed", function() {
+          console.log("accessAllowed");
+        });
+
+        // The user has denied access to the camera and mic.
+        localStream.on("accessDenied", function() {
+          console.log("accessDenied");
+        });
+
+        localStream.init(function() {
+          console.log("getUserMedia successfully");
+          localStream.play('agora_local');
+
+          client.publish(localStream, function (err) {
+            console.log("Publish local stream error: " + err);
+          });
+
+          client.on('stream-published', function (evt) {
+            console.log("Publish local stream successfully");
+          });
+        }, function (err) {
+          console.log("getUserMedia failed", err);
+        });
+      }
+    }, function(err) {
+      console.log("Join channel failed", err);
+    });
+      }
+    );
+    
+  }, function (err) {
+    console.log("AgoraRTC client init failed", err);
+  });
+
+  channelKey = token;
+  client.on('error', function(err) {
+    console.log("Got error msg:", err.reason);
+    if (err.reason === 'DYNAMIC_KEY_TIMEOUT') {
+      client.renewChannelKey(channelKey, function(){
+        console.log("Renew channel key successfully");
+      }, function(err){
+        console.log("Renew channel key failed: ", err);
+      });
+    }
+  });
+
+
+  client.on('stream-added', function (evt) {
+    var stream = evt.stream;
+    console.log("New stream added: " + stream.getId());
+    console.log("Subscribe ", stream);
+    client.subscribe(stream, function (err) {
+      console.log("Subscribe stream failed", err);
+    });
+  });
+
+  client.on('stream-subscribed', function (evt) {
+    var stream = evt.stream;
+    console.log("Subscribe remote stream successfully: " + stream.getId());
+    if ($('div#video #agora_remote'+stream.getId()).length === 0) {
+      $('div#video').append('<div id="agora_remote'+stream.getId()+'" style="float:left;width:100px;height:100px;display:inline-block;"></div>');//
+    }
+    stream.play('agora_remote' + stream.getId());
+    console.log("The other id is ",stream.getId())
+// PoseNet code
+var video = document.getElementById('video'+stream.getId());
+video.width=500;
+video.height=500;
+
+var local_video=document.getElementById('video'+uid);
+local_video.width=500;
+local_video.height=500;
+video.addEventListener('play', function () {
+        console.log("#remoteVideo play");
+      
+var canvas = document.getElementById('canvas');
+var canvas2 = document.getElementById('canvas2');
+var ctx = canvas.getContext('2d');
+var ctx2 = canvas2.getContext('2d');
+
+// The detected positions will be inside an array
+let poses = [];
+let poses2=[];
+function drawCameraIntoCanvas() {
+  // Draw the video element into the canvas
+  ctx.drawImage(local_video, 0, 0, 500, 500);
+
+  ctx2.drawImage(video, 0, 0, 500, 500)
+  // We can call both functions to draw all keypoints and the skeletons
+  drawKeypoints();
+  drawSkeleton();
+  drawKeypoints2();
+  drawSkeleton2();
+  window.requestAnimationFrame(drawCameraIntoCanvas);
+}
+// Loop over the drawCameraIntoCanvas function
+drawCameraIntoCanvas();
+
+// Create a new poseNet method with a single detection
+const poseNet = ml5.poseNet(video, modelReady);
+poseNet.on('pose', gotPoses);
+const poseNet2 = ml5.poseNet(local_video, modelReady);
+poseNet2.on('pose', gotPoses2);
+
+// A function that gets called every time there's an update from the model
+function gotPoses(results) {
+  poses = results;
+  // console.log(poses)
+}
+function gotPoses2(results) {
+  poses2 = results;
+  // console.log(poses)
+}
+
+function modelReady() {
+  console.log("model ready")
+}
+
+// A function to draw ellipses over the detected keypoints
+function drawKeypoints()  {
+  // Loop through all the poses detected
+  // for (let i = 0; i < poses.length; i++) {
+    // For each pose detected, loop through all the keypoints
+    if (poses.length > 0) {
+    for (let j = 0; j < poses[0].pose.keypoints.length; j++) {
+      let keypoint = poses[0].pose.keypoints[j];
+      // Only draw an ellipse is the pose probability is bigger than 0.2
+      if (keypoint.score > 0.2) {
+        
+        // var grd = ctx.createRadialGradient(75,50,5,90,60,100);
+        // grd.addColorStop(0,"green");
+        // grd.addColorStop(1,"white");
+        // ctx.globalAlpha = 0.5;
+        // Fill with gradient
+        // console.log(keypoint);
+        if(keypoint.part=="rightWrist" || keypoint.part=="leftWrist" ){
+          ctx.fillStyle = "#FFDD00";
+        }
+        else{
+          ctx.fillStyle = "#FF0000";
+        }
+
+        
+        ctx.beginPath();
+        ctx.arc(keypoint.position.x, keypoint.position.y, 10, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.fill()
+      }
+    }
+  }
+}
+
+// A function to draw the skeletons
+function drawSkeleton() {
+  // Loop through all the skeletons detected
+  // for (let i = 0; i < poses.length; i++) {
+    // For every skeleton, loop through all body connections
+    if (poses.length > 0) {
+    for (let j = 0; j < poses[0].skeleton.length; j++) {
+      let partA = poses[0].skeleton[j][0];
+      let partB = poses[0].skeleton[j][1];
+      ctx.beginPath();
+      ctx.lineWidth = 7;
+      ctx.moveTo(partA.position.x, partA.position.y);
+      ctx.lineTo(partB.position.x, partB.position.y);
+      ctx.strokeStyle = "#00ffff";
+      ctx.stroke();
+    }
+  }
+}
+function drawKeypoints2()  {
+  // Loop through all the poses detected
+  // for (let i = 0; i < poses2.length; i++) {
+    // For each pose detected, loop through all the keypoints
+    if (poses2.length > 0) {
+    for (let j = 0; j < poses2[0].pose.keypoints.length; j++) {
+      let keypoint = poses2[0].pose.keypoints[j];
+      // Only draw an ellipse is the pose probability is bigger than 0.2
+      if (keypoint.score > 0.2) {
+        // var grd = ctx2.createRadialGradient(75,50,5,90,60,100);
+        // grd.addColorStop(0,"green");
+        // grd.addColorStop(1,"white");
+        // ctx2.globalAlpha = 0.5;
+        // Fill with gradient
+        if(keypoint.part=="rightWrist" || keypoint.part=="leftWrist" ){
+          ctx2.fillStyle = "#FFDD00";
+        }
+        else{
+          ctx2.fillStyle = "#00FF00";
+        }
+        ctx2.beginPath();
+        ctx2.arc(keypoint.position.x, keypoint.position.y, 10, 0, 2 * Math.PI);
+        ctx2.stroke();
+        ctx2.fill()
+
+      }
+    }
+  }
+}
+
+// A function to draw the skeletons
+function drawSkeleton2() {
+  // Loop through all the skeletons detected
+  // for (let i = 0; i < poses2.length; i++) {
+    // For every skeleton, loop through all body connections
+    if (poses2.length > 0) {
+    for (let j = 0; j < poses2[0].skeleton.length; j++) {
+      let partA = poses2[0].skeleton[j][0];
+      let partB = poses2[0].skeleton[j][1];
+      ctx2.beginPath();
+      ctx2.lineWidth = 7;
+      ctx2.moveTo(partA.position.x, partA.position.y);
+      ctx2.lineTo(partB.position.x, partB.position.y);
+      ctx2.strokeStyle = "#00ffff";
+      ctx2.stroke();
+    }
+  }
+}
+
+
+
+
+      }, false);
+
+
+
+
+  });
+
+  client.on('stream-removed', function (evt) {
+    var stream = evt.stream;
+    stream.stop();
+    $('#agora_remote' + stream.getId()).remove();
+    console.log("Remote stream is removed " + stream.getId());
+  });
+
+  client.on('peer-leave', function (evt) {
+    var stream = evt.stream;
+    if (stream) {
+      stream.stop();
+      $('#agora_remote' + stream.getId()).remove();
+      console.log(evt.uid + " leaved from this channel");
+    }
+  });
+  // publish()
+}
+
+function leave() {
+  // document.getElementById("leave").disabled = true;
+  client.leave(function () {
+    console.log("Leavel channel successfully");
+  }, function (err) {
+    console.log("Leave channel failed");
+  });
+  // unpublish()
+}
+
+function publish() {
+  document.getElementById("publish").disabled = true;
+  document.getElementById("unpublish").disabled = false;
+  client.publish(localStream, function (err) {
+    console.log("Publish local stream error: " + err);
+  });
+}
+
+function unpublish() {
+  document.getElementById("publish").disabled = false;
+  document.getElementById("unpublish").disabled = true;
+  client.unpublish(localStream, function (err) {
+    console.log("Unpublish local stream failed" + err);
+  });
+}
+
+function getDevices() {
+  AgoraRTC.getDevices(function (devices) {
+    for (var i = 0; i !== devices.length; ++i) {
+      var device = devices[i];
+      var option = document.createElement('option');
+      option.value = device.deviceId;
+      if (device.kind === 'audioinput') {
+        option.text = device.label || 'microphone ' + (audioSelect.length + 1);
+        audioSelect.appendChild(option);
+      } else if (device.kind === 'videoinput') {
+        option.text = device.label || 'camera ' + (videoSelect.length + 1);
+        videoSelect.appendChild(option);
+      } else {
+        // console.log('Some other kind of source/device: ', device);
+      }
+    }
+  });
+}
+
+//audioSelect.onchange = getDevices;
+//videoSelect.onchange = getDevices;
+getDevices();
+</script>
+</body>
+</html>
+<!-- 
+
+    <!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="myCanvas" width="300" height="150" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<script>
+var c = document.getElementById("myCanvas");
+var ctx = c.getContext("2d");
+/*
+for(i=0,i<36,i++){
+ctx.arc(45, 65, 10, i*10, 2 * Math.PI);
+ctx.stroke();
+//if (ctx.isPointInPath(95, 65)) {
+  //ctx.stroke();
+//};
+}*/
+for (let i=1; i<=100; i++) {
+    setTimeout( function timer(){
+    var grd = ctx.createRadialGradient(65, 65, 40, 65, 65, 15);
+    if(i%2==0){
+     grd.addColorStop(0, "orange");
+grd.addColorStop(1, "white");
+    }
+else{
+
+grd.addColorStop(1, "orange");
+grd.addColorStop(0, "white");}
+    ctx.globalAlpha = 0.3;
+        console.log("hello world");
+        ctx.arc(65, 65, 40, (i/100)*2*Math.PI, 2*((i+1)/100)*Math.PI);
+        ctx.lineWidth = 2;
+        
+        
+        
+       
+grd.addColorStop(0, "orange");
+grd.addColorStop(1, "yellow");
+ctx.fillStyle = grd;
+        
+ctx.stroke();
+ctx.fill()
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }, i*50 );
+}
+</script> 
+
+</body>
+</html>
+
+
+ -->
