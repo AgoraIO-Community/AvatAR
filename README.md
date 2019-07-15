@@ -1,4 +1,4 @@
-# ![TARDIS](https://github.com/iakashpaul/tardis-agora/raw/master/favicon.jpg "TARDIS") TARDIS | Agora.io Challenge
+# ![TARDIS](https://github.com/iakashpaul/tardis-agora/raw/master/favicon.jpg "TARDIS") AVATAR - TARDIS | Agora.io Challenge
 
 The project aims to build a playground/plugin which developers can use to define gestures within video calls. For ex. Ability to add VFX like Doctor Strange making those golden circles, Thor lightning up with electricity flowing through him, even do sign language(not finger level fidelity)/human pose detection for a variety of tasks, all within the browser be it on PC or mobile using TensorFlow for ML+AR & Agora to do the video-chat heavy lifting.
 
@@ -34,4 +34,4 @@ We've used Agora.io stack to help people learn, instruct others & participate in
 
 # Media
 
-[![TARDIS VIDEO](http://img.youtube.com/vi/sN4ITLhJ5zs/0.jpg)](http://www.youtube.com/watch?v=sN4ITLhJ5zs)
+[![AVATAR-TARDIS VIDEO](http://img.youtube.com/vi/sN4ITLhJ5zs/0.jpg)](http://www.youtube.com/watch?v=sN4ITLhJ5zs)
