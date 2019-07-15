@@ -2,8 +2,6 @@
 
 The project aims to build a playground/plugin which developers can use to define gestures within video calls. For ex. Ability to add VFX like Doctor Strange making those golden circles, Thor lightning up with electricity flowing through him, even do sign language(not finger level fidelity)/human pose detection for a variety of tasks, all within the browser be it on PC or mobile using TensorFlow for ML+AR & Agora to do the video-chat heavy lifting.
 
-## Team : Akash Paul
-
 ## About
 
 We've used Agora.io stack to help people learn, instruct others & participate in immersive AR experiences without requiring costly hardware & delivered via a webpage for PC/Android browsers. Selling hosting & add-ons would be another way for developers to create more use cases with our product by incorporating human pose detection data which is being performed on the device itself
