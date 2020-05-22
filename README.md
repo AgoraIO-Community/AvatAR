@@ -28,7 +28,7 @@ We've used Agora.io stack to help people learn, instruct others & participate in
 
 - TensorFlow.js, [PoseNet Model for realtime human pose detection](https://github.com/ml5js/ml5-examples/tree/release/javascript/PoseNet)
 
-- Materializecss for themeing, jQuery for helping with JS.
+- Materializecss for theming, jQuery for helping with JS.
 
 # Media
 
